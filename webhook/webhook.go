@@ -98,11 +98,7 @@ func (w *Webhook) Get() error {
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(content, w)
-	if err != nil {
-		return err
-	}
-	return nil
+	return json.Unmarshal(content, w)
 }
 
 // SendMessage sends message to webhook
@@ -116,11 +112,7 @@ func (w *Webhook) SendMessage(message *WebhookMessage) (response []byte, err err
 	if err != nil {
 		return
 	}
-	response, err = CheckResponse(resp)
-	if err != nil {
-		return
-	}
-	return
+	return CheckResponse(resp)
 }
 
 // SendFile sends file with message to webhook
@@ -157,11 +149,7 @@ func (w *Webhook) SendFile(file []byte, filename string, message *WebhookMessage
 	if err != nil {
 		return
 	}
-	response, err = CheckResponse(resp)
-	if err != nil {
-		return
-	}
-	return
+	return CheckResponse(resp)
 }
 
 // Modify modifies webhook at the client and discord side.
@@ -186,9 +174,6 @@ func (w *Webhook) Modify(update *WebhookUpdate) (response []byte, err error) {
 		return
 	}
 	err = json.Unmarshal(response, w)
-	if err != nil {
-		return
-	}
 	return
 }
 
@@ -198,14 +183,10 @@ func (w *Webhook) Delete() (response []byte, err error) {
 	if err != nil {
 		return
 	}
-	client := http.DefaultClient
-	resp, err := client.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return
 	}
 	response, err = CheckResponse(resp)
-	if err != nil {
-		return
-	}
 	return
 }
