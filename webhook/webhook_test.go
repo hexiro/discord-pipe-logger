@@ -11,7 +11,7 @@ func TestWebhookFromURLString(t *testing.T) {
 		ID:    "671422873239289884",
 		Token: "G0ArWEr3hgJ1I4THBIiwxkIbnGkHTGawikf3Z7be3afsZD-hCH-hNwWxU0rQAe3U7nkX",
 	}
-	test, err := WebhookFromURL(testURL)
+	test, err := FromURL(testURL)
 	if err != nil {
 		t.Error("Got unexpected error ", err)
 	}
@@ -31,7 +31,7 @@ func TestWebhookFromURLStringWithWrongURL(t *testing.T) {
 	}
 	for test, link := range testData {
 		t.Run(test, func(t *testing.T) {
-			webhook, err := WebhookFromURL(link)
+			webhook, err := FromURL(link)
 			if webhook != nil || err == nil {
 				t.Error("Wanted nothing, got webhook")
 			}
@@ -39,7 +39,7 @@ func TestWebhookFromURLStringWithWrongURL(t *testing.T) {
 	}
 }
 func TestWebhookURL(t *testing.T) {
-	webhook, _ := WebhookFromURL(testURL)
+	webhook, _ := FromURL(testURL)
 	if webhook.URL() != testURL {
 		t.Fail()
 	}

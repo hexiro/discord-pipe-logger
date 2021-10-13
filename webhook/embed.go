@@ -1,5 +1,8 @@
 package webhook
 
+// EmbedProvider can safely be ignored according to:
+// https://github.com/discord/discord-api-docs/issues/596#issuecomment-387584815
+
 // Embed represents discord embed. https://discord.com/developers/docs/resources/channel#embed-object
 type Embed struct {
 	// Title of embed
@@ -13,14 +16,13 @@ type Embed struct {
 	// Timestamp of embed content. Should be in ISO8601 format.
 	Timestamp string `json:"timestamp"`
 	// Color code of the embed
-	Color     int             `json:"color"`
-	Footer    *EmbedFooter    `json:"footer"`
-	Image     *EmbedImage     `json:"image"`
-	Thumbnail *EmbedThumbnail `json:"thumbnail"`
-	Video     *EmbedVideo     `json:"video"`
-	Provider  *EmbedProvider  `json:"provider"`
-	Author    *EmbedAuthor    `json:"author"`
-	Fields    []*EmbedField   `json:"fields"`
+	Color     int           `json:"color"`
+	Footer    *EmbedFooter  `json:"footer"`
+	Image     *EmbedImage   `json:"image"`
+	Thumbnail *EmbedImage   `json:"thumbnail"`
+	Video     *EmbedVideo   `json:"video"`
+	Author    *EmbedAuthor  `json:"author"`
+	Fields    []*EmbedField `json:"fields"`
 }
 
 // EmbedFooter represents embed's footer
@@ -29,30 +31,15 @@ type EmbedFooter struct {
 	Text string `json:"text"`
 	// URL of footer icon (only supports http(s) and attachments)
 	IconURL string `json:"icon_url"`
-	// Proxied URL of footer icon
-	ProxyIconURL string `json:"proxy_icon_url"`
 }
 
 // EmbedImage represents Image that would be inside of the embed
 type EmbedImage struct {
 	// URL source of image (only supports http(s) and attachments)
 	URL string `json:"url"`
-	// A proxied url of the image
-	ProxyURL string `json:"proxy_url"`
 	// Height of image
 	Height int `json:"height"`
 	// Width of image
-	Width int `json:"width"`
-}
-
-type EmbedThumbnail struct {
-	// URL source of thumbnail (only supports http(s) and attachments)
-	URL string `json:"url"`
-	// A proxied url of the thumbnail
-	ProxyURL string `json:"proxy_url"`
-	// Height of thumbnail
-	Height int `json:"height"`
-	// Width of thumbnail
 	Width int `json:"width"`
 }
 
@@ -74,18 +61,9 @@ type EmbedAuthor struct {
 	URL string `json:"url"`
 	// URL of author icon (only supports http(s) and attachments)
 	IconURL string `json:"icon_url"`
-	// Proxied URL of author icon
-	ProxyIconURL string `json:"proxy_icon_url"`
 }
 
-type EmbedProvider struct {
-	// Name of provider
-	Name string `json:"name"`
-	// URL of provider
-	URL string `json:"url"`
-}
-
-// EmbedField represents embed field
+// EmbedField represents embed field (max. 25)
 type EmbedField struct {
 	// Name of the field. Required.
 	Name string `json:"name"`

@@ -7,46 +7,24 @@ import (
 	"errors"
 	"mime/multipart"
 	"net/http"
-	"net/url"
 	"regexp"
-	"strings"
 )
 
-// WebhookType is a webhook type for discord webhooks
-// https://discordapp.com/developers/docs/resources/webhook#webhook-object-webhook-types
-type WebhookType int
+// discordURLRegex from https://github.com/kyb3r/dhooks/blob/cdd5f3f3bc109cbbc06f16a1cd9d39ed9d75a94e/dhooks/client.py#L118
+var discordURLRegex = regexp.MustCompile(`^(?:https?://)?((canary|ptb)\.)?discord(?:app)?\.com/api/webhooks/(?P<id>[0-9]{0,20})/(?P<token>[A-Za-z0-9\.\-\_]+)/?$`)
 
-const (
-	// Incoming type Webhooks can post messages to channels with a generated token
-	Incoming WebhookType = iota + 1
-	// ChannelFollower type Webhooks are internal webhooks used with Channel Following
-	// to post new messages into channels
-	ChannelFollower
-)
 
-const discordHost string = "discordapp.com"
-const discordPathPattern string = "/api/webhooks/[0-9]{0,20}/[a-zA-Z0-9_-]+"
-
-// ErrParseWebhook represents error from `WebhookFromURL`
-var ErrParseWebhook = errors.New("Provided URL is not a Discord webhook URL")
+// ErrParseWebhook represents error from `FromURL`
+var ErrParseWebhook = errors.New("provided url is not a discord webhook url")
 
 // Webhook is a representation of discord webhooks
 type Webhook struct {
-	// ID of the webhook
-	ID string `json:"id"`
-	// Type is WebhookType
-	Type      WebhookType `json:"type"`
-	GuildID   string      `json:"guild_id"`
-	ChannelID string      `json:"channel_id"`
-	Name      string      `json:"name"`
-	Avatar    string      `json:"avatar"`
-	Token     string      `json:"token"`
-
-	// There may be a one more field named `user` but it is not used in case
-	// of posting messages using webhook. It is used for bots and clients only.
-	// You would probably consider using discordgo or disgord for this purposes.
-	// github.com/bwmarrin/discordgo
-	// github.com/andersfylling/disgord
+	ID        string `json:"id"`
+	GuildID   string `json:"guild_id"`
+	ChannelID string `json:"channel_id"`
+	Name      string `json:"name"`
+	Avatar    string `json:"avatar"`
+	Token     string `json:"token"`
 }
 
 // WebhookMessage represents a message to send using webhook.
@@ -64,47 +42,31 @@ type WebhookMessage struct {
 	// See `SendFile`.
 }
 
-// WebhookUpdate is used to update webhooks using tokens.
+// WebhookUpdate is used to update webhooks using tokens. Only name and avatar can be updated.
 type WebhookUpdate struct {
 	Name string `json:"name"`
-	// Avatar is a base64 encoded image. https://discordapp.com/developers/docs/reference#image-data
+	// Avatar is a base64 encoded image. https://discord.com/developers/docs/reference#image-data
 	Avatar string `json:"avatar"`
-
-	// ChannelID field is not presented here as this is not allowed to update
-	// channel ID using token.
 }
 
-// WebhookFromURL parses URL and returns Webhook struct.
-func WebhookFromURL(webhookURL string) (webhook *Webhook, err error) {
-	urls, err := url.Parse(webhookURL)
-	if err != nil {
-		return
-	}
-	if urls.Hostname() != discordHost {
+// FromURL parses URL and returns Webhook struct.
+func FromURL(webhookURL string) (webhook *Webhook, err error) {
+	match := discordURLRegex.FindStringSubmatch(webhookURL)
+	if len(match) == 0 {
 		err = ErrParseWebhook
 		return
 	}
-	ok, err := regexp.MatchString(discordPathPattern, urls.Path)
-	if err != nil {
-		return
-	}
-	if !ok {
-		err = ErrParseWebhook
-		return
-	}
-	path := strings.Split(urls.Path, "/")
-	id, token := path[3], path[4]
+	id, token := match[3], match[4]
 	webhook = &Webhook{
 		ID:    id,
 		Token: token,
-		Type:  Incoming,
 	}
 	return
 }
 
 // URL returns discord url of the webhook
 func (w *Webhook) URL() string {
-	return "https://" + discordHost + "/api/webhooks/" + w.ID + "/" + w.Token
+	return "https://discord.com/api/webhooks/" + w.ID + "/" + w.Token
 }
 
 // Get gets information about webhook.
