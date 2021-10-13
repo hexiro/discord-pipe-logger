@@ -7,15 +7,19 @@ import (
 	"errors"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 	"regexp"
+	"strings"
 )
 
-// discordURLRegex from https://github.com/kyb3r/dhooks/blob/cdd5f3f3bc109cbbc06f16a1cd9d39ed9d75a94e/dhooks/client.py#L118
-var discordURLRegex = regexp.MustCompile(`^(?:https?://)?((canary|ptb)\.)?discord(?:app)?\.com/api/webhooks/(?P<id>[0-9]{0,20})/(?P<token>[A-Za-z0-9\.\-\_]+)/?$`)
+// from https://github.com/kyb3r/dhooks/blob/cdd5f3f3bc109cbbc06f16a1cd9d39ed9d75a94e/dhooks/client.py#L118
+// discordHostRegex matches "discord.com", "discordapp.com", "canary.discord.com", "ptb.discord.com"
+var discordHostRegex = regexp.MustCompile("^((canary|ptb)\\.)?discord(?:app)?\\.com$")
+var discordIdRegex = regexp.MustCompile("^[0-9]{0,20}$")
+var discordTokenRegex = regexp.MustCompile(`^[A-Za-z0-9\.\-\_]+$`)
 
-
-// ErrParseWebhook represents error from `FromURL`
-var ErrParseWebhook = errors.New("provided url is not a discord webhook url")
+// ErrParseWebhook represents error when parsing url, id, or token
+var ErrParseWebhook = errors.New("failed to parse discord webhook url")
 
 // Webhook is a representation of discord webhooks
 type Webhook struct {
@@ -51,12 +55,26 @@ type WebhookUpdate struct {
 
 // FromURL parses URL and returns Webhook struct.
 func FromURL(webhookURL string) (webhook *Webhook, err error) {
-	match := discordURLRegex.FindStringSubmatch(webhookURL)
-	if len(match) == 0 {
+	urls, err := url.Parse(webhookURL)
+	if err != nil {
+		return
+	}
+	ok := discordHostRegex.MatchString(urls.Hostname())
+	path := strings.Split(urls.Path, "/")
+	// len is 5 normally, could be 6 with trailing /
+	if !ok || len(path) < 5 {
 		err = ErrParseWebhook
 		return
 	}
-	id, token := match[3], match[4]
+	id, token := path[3], path[4]
+	return FromIDAndToken(id, token)
+}
+
+func FromIDAndToken(id string, token string) (webhook *Webhook, err error) {
+	if !(discordIdRegex.MatchString(id) || discordTokenRegex.MatchString(token)) {
+		err = ErrParseWebhook
+		return
+	}
 	webhook = &Webhook{
 		ID:    id,
 		Token: token,
