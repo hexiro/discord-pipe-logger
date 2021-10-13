@@ -62,7 +62,7 @@ func FromURL(webhookURL string) (webhook *Webhook, err error) {
 	ok := discordHostRegex.MatchString(urls.Hostname())
 	path := strings.Split(urls.Path, "/")
 	// len is 5 normally, could be 6 with trailing /
-	if !ok || len(path) < 5 {
+	if !ok || len(path) < 5 || !strings.HasPrefix(urls.Path, "/api/webhook")  {
 		err = ErrParseWebhook
 		return
 	}
