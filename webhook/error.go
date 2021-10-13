@@ -23,7 +23,7 @@ func (e *APIError) Error() string {
 // `body` contains response from the server and probably will contain error information if
 // it hasn't been parsed to `*APIError` type.
 func CheckResponse(response *http.Response) (body []byte, err error) {
-	resp, err := ioutil.ReadAll(response.Body)
+	body, err = ioutil.ReadAll(response.Body)
 	if err != nil {
 		return
 	}
@@ -31,19 +31,25 @@ func CheckResponse(response *http.Response) (body []byte, err error) {
 	if err != nil {
 		return
 	}
-	body = resp
-	if response.StatusCode != http.StatusOK &&
-		response.StatusCode != http.StatusNoContent &&
-		response.StatusCode != http.StatusCreated {
+	switch response.StatusCode {
+	case http.StatusOK:
+	case http.StatusNoContent:
+	case http.StatusCreated:
+		return
+	default:
 		result := &APIError{
 			HTTPResponse: response.StatusCode,
 		}
-		err = json.Unmarshal(resp, result)
+		err = json.Unmarshal(body, result)
 		if err != nil {
 			return
 		}
 		err = result
-		return
 	}
 	return
+}
+
+func CheckError(response *http.Response) error {
+	_, err := CheckResponse(response)
+	return err
 }

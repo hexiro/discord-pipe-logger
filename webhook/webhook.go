@@ -102,91 +102,88 @@ func (w *Webhook) Get() error {
 }
 
 // SendMessage sends message to webhook
-func (w *Webhook) SendMessage(message *WebhookMessage) (response []byte, err error) {
+func (w *Webhook) SendMessage(message *WebhookMessage) error {
 	content, err := json.Marshal(message)
 	if err != nil {
-		return
+		return err
 	}
 	buf := bytes.NewBuffer(content)
 	resp, err := http.Post(w.URL(), "application/json", buf)
 	if err != nil {
-		return
+		return err
 	}
-	return CheckResponse(resp)
+	return CheckError(resp)
 }
 
 // SendFile sends file with message to webhook
-func (w *Webhook) SendFile(file []byte, filename string, message *WebhookMessage) (response []byte, err error) {
+func (w *Webhook) SendFile(file []byte, filename string, message *WebhookMessage) error {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 	f, err := writer.CreateFormFile("file", filename)
 	if err != nil {
-		return
+		return err
 	}
 	_, err = f.Write(file)
 	if err != nil {
-		return
+		return err
 	}
 	payload, err := writer.CreateFormField("payload_json")
 	if err != nil {
-		return
+		return err
 	}
 	msg, err := json.Marshal(message)
 	if err != nil {
-		return
+		return err
 	}
 	encode := make([]byte, base64.URLEncoding.EncodedLen(len(msg)))
 	base64.URLEncoding.Encode(encode, msg)
 	_, err = payload.Write(msg)
 	if err != nil {
-		return
+		return err
 	}
 	err = writer.Close()
 	if err != nil {
-		return
+		return err
 	}
 	resp, err := http.Post(w.URL(), writer.FormDataContentType(), body)
 	if err != nil {
-		return
+		return err
 	}
-	return CheckResponse(resp)
+	return CheckError(resp)
 }
 
 // Modify modifies webhook at the client and discord side.
-func (w *Webhook) Modify(update *WebhookUpdate) (response []byte, err error) {
+func (w *Webhook) Modify(update *WebhookUpdate) error {
 	body, err := json.Marshal(update)
 	if err != nil {
-		return
+		return err
 	}
 	buf := bytes.NewBuffer(body)
 	req, err := http.NewRequest(http.MethodPatch, w.URL(), buf)
 	if err != nil {
-		return
+		return err
 	}
 	req.Header.Add("Content-Type", "application/json")
-	client := http.DefaultClient
-	resp, err := client.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return
+		return err
 	}
-	response, err = CheckResponse(resp)
+	response, err := CheckResponse(resp)
 	if err != nil {
-		return
+		return err
 	}
-	err = json.Unmarshal(response, w)
-	return
+	return json.Unmarshal(response, w)
 }
 
 // Delete deletes webhook from discord.
-func (w *Webhook) Delete() (response []byte, err error) {
+func (w *Webhook) Delete() error {
 	req, err := http.NewRequest(http.MethodDelete, w.URL(), nil)
 	if err != nil {
-		return
+		return err
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return
+		return err
 	}
-	response, err = CheckResponse(resp)
-	return
+	return CheckError(resp)
 }
