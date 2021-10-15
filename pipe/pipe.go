@@ -2,16 +2,23 @@ package pipe
 
 import (
 	"bufio"
-	"fmt"
 	"log"
+	"math"
 	"os"
 )
 
 // some code taken from
 // https://zetcode.com/golang/pipe/
 
-func ReadInput() []byte {
-	stat, _ := os.Stdin.Stat()
+const discordCharLimit = 2000
+
+func ReadMessages() []string {
+	stat, err := os.Stdin.Stat()
+	var messages []string
+
+	if err != nil {
+		return messages
+	}
 
 	if (stat.Mode() & os.ModeCharDevice) == 0 {
 
@@ -26,8 +33,22 @@ func ReadInput() []byte {
 			log.Fatal(err)
 		}
 
-		fmt.Printf("Hello %s!\n", buf)
-		return buf
+
+		str := string(buf)
+
+		dividedLength := float64(len(str)) / float64(discordCharLimit)
+		messagedNeeded := int(math.Ceil(dividedLength))
+
+		for i := 0; i < messagedNeeded; i++ {
+			lowerBoundary := i*discordCharLimit
+			upperBoundary := (i+1)*discordCharLimit
+			if upperBoundary > len(str) {
+				upperBoundary = len(str)
+			}
+			messages = append(messages, str[lowerBoundary:upperBoundary])
+		}
+
+		return messages
 	}
 	return nil
 }
