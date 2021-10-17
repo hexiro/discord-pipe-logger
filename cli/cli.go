@@ -2,25 +2,32 @@ package cli
 
 import (
 	"discord-pipe-logger/webhook"
-	"flag"
+	"errors"
 	"os"
+	"strings"
 )
 
-func Parse() *webhook.Webhook {
-	var id string
-	var token string
-	flag.StringVar(&id, "i", "", "The ID of the Discord webhook")
-	flag.StringVar(&token, "t", "", "The Token of the Discord webhook")
-	flag.Parse()
-
-	if id == "" || token == "" {
-		flag.Usage()
-		os.Exit(1)
+func Parse() (*webhook.Webhook, error) {
+	if len(os.Args) < 2 {
+		return nil, errors.New("no input provided")
 	}
 
-	hook, err := webhook.FromIDAndToken(id, token)
-	if err != nil {
-		panic(err)
+	var hook *webhook.Webhook
+	var err error
+
+	arg := os.Args[1]
+	hook, err = webhook.FromURL(arg)
+
+	if err == nil {
+		return hook, err
 	}
-	return hook
+	argSplit := strings.Split(arg, "/")
+	argSplitLength := len(argSplit)
+
+	if argSplitLength < 2 {
+		return  hook, errors.New("hook can't be parsed from input")
+	}
+
+	id, token := argSplit[argSplitLength-2], argSplit[argSplitLength-1]
+	return webhook.FromIDAndToken(id, token)
 }

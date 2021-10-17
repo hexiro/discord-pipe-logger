@@ -2,7 +2,7 @@ package pipe
 
 import (
 	"bufio"
-	"log"
+	"errors"
 	"math"
 	"os"
 )
@@ -12,12 +12,12 @@ import (
 
 const discordCharLimit = 2000
 
-func ReadMessages() []string {
+func ReadMessages() ([]string, error) {
 	stat, err := os.Stdin.Stat()
 	var messages []string
 
 	if err != nil {
-		return messages
+		return messages, err
 	}
 
 	if (stat.Mode() & os.ModeCharDevice) == 0 {
@@ -30,9 +30,8 @@ func ReadMessages() []string {
 		}
 
 		if err := scanner.Err(); err != nil {
-			log.Fatal(err)
+			return messages, err
 		}
-
 
 		str := string(buf)
 
@@ -40,15 +39,14 @@ func ReadMessages() []string {
 		messagedNeeded := int(math.Ceil(dividedLength))
 
 		for i := 0; i < messagedNeeded; i++ {
-			lowerBoundary := i*discordCharLimit
-			upperBoundary := (i+1)*discordCharLimit
+			lowerBoundary := i * discordCharLimit
+			upperBoundary := (i + 1) * discordCharLimit
 			if upperBoundary > len(str) {
 				upperBoundary = len(str)
 			}
 			messages = append(messages, str[lowerBoundary:upperBoundary])
 		}
-
-		return messages
+		return messages, nil
 	}
-	return nil
+	return messages, errors.New("failed to read from pipe")
 }

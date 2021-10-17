@@ -12,11 +12,16 @@ import (
 	"strings"
 )
 
+// modified from
+// https://github.com/itsTurnip/dishooks
+
 // from https://github.com/kyb3r/dhooks/blob/cdd5f3f3bc109cbbc06f16a1cd9d39ed9d75a94e/dhooks/client.py#L118
 // discordHostRegex matches "discord.com", "discordapp.com", "canary.discord.com", "ptb.discord.com"
-var discordHostRegex = regexp.MustCompile("^((canary|ptb)\\.)?discord(?:app)?\\.com$")
-var discordIdRegex = regexp.MustCompile("^[0-9]{0,20}$")
-var discordTokenRegex = regexp.MustCompile(`^[A-Za-z0-9\.\-\_]+$`)
+var (
+	discordHostRegex = regexp.MustCompile("^((canary|ptb)\\.)?discord(?:app)?\\.com$")
+	discordIdRegex    = regexp.MustCompile("^[0-9]{0,20}$")
+	discordTokenRegex = regexp.MustCompile(`^[A-Za-z0-9\.\-\_]+$`)
+)
 
 // ErrParseWebhook represents error when parsing url, id, or token
 var ErrParseWebhook = errors.New("failed to parse discord webhook url")
@@ -62,7 +67,7 @@ func FromURL(webhookURL string) (webhook *Webhook, err error) {
 	ok := discordHostRegex.MatchString(urls.Hostname())
 	path := strings.Split(urls.Path, "/")
 	// len is 5 normally, could be 6 with trailing /
-	if !ok || len(path) < 5 || !strings.HasPrefix(urls.Path, "/api/webhook")  {
+	if !ok || len(path) < 5 || !strings.HasPrefix(urls.Path, "/api/webhook") {
 		err = ErrParseWebhook
 		return
 	}
