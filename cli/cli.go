@@ -1,8 +1,8 @@
 package cli
 
 import (
-	"discord-pipe-logger/webhook"
 	"errors"
+	"github.com/Hexiro/discord-pipe-logger/webhook"
 	"os"
 	"strings"
 )
@@ -25,7 +25,7 @@ func Parse() (*webhook.Webhook, error) {
 	argSplitLength := len(argSplit)
 
 	if argSplitLength < 2 {
-		return  hook, errors.New("invalid webhook provided")
+		return hook, errors.New("invalid webhook provided")
 	}
 
 	id, token := argSplit[argSplitLength-2], argSplit[argSplitLength-1]
