@@ -3,7 +3,7 @@ package pipe
 import (
 	"bufio"
 	"errors"
-	"math"
+	"io"
 	"os"
 )
 
@@ -12,41 +12,50 @@ import (
 
 const discordCharLimit = 2000
 
+func Read() ([]rune, error) {
+	info, err := os.Stdin.Stat()
+	var output []rune
+
+	if err != nil {
+		return output, err
+	}
+
+	if (info.Mode() & os.ModeCharDevice) != 0 {
+		return output, errors.New("failed to read from pipe")
+	}
+
+	reader := bufio.NewReader(os.Stdin)
+
+	for {
+		input, _, err := reader.ReadRune()
+		if err != nil && err == io.EOF {
+			break
+		}
+		output = append(output, input)
+	}
+
+	return output, nil
+}
+
 func ReadMessages() ([]string, error) {
-	stat, err := os.Stdin.Stat()
 	var messages []string
+
+	input, err := Read()
 
 	if err != nil {
 		return messages, err
 	}
 
-	if (stat.Mode() & os.ModeCharDevice) == 0 {
+	inputString := string(input)
+	// split every discordCharLimit (2000) chars
 
-		var buf []byte
-		scanner := bufio.NewScanner(os.Stdin)
-
-		for scanner.Scan() {
-			buf = append(buf, scanner.Bytes()...)
+	for i := 0; i < len(inputString); i += discordCharLimit {
+		lowerBoundary := i
+		upperBoundary := i + discordCharLimit
+		if upperBoundary > len(inputString) {
+			upperBoundary = len(inputString)
 		}
-
-		if err := scanner.Err(); err != nil {
-			return messages, err
-		}
-
-		str := string(buf)
-
-		dividedLength := float64(len(str)) / float64(discordCharLimit)
-		messagedNeeded := int(math.Ceil(dividedLength))
-
-		for i := 0; i < messagedNeeded; i++ {
-			lowerBoundary := i * discordCharLimit
-			upperBoundary := (i + 1) * discordCharLimit
-			if upperBoundary > len(str) {
-				upperBoundary = len(str)
-			}
-			messages = append(messages, str[lowerBoundary:upperBoundary])
-		}
-		return messages, nil
+		messages = append(messages, inputString[lowerBoundary:upperBoundary])
 	}
-	return messages, errors.New("failed to read from pipe")
+	return messages, nil
 }
