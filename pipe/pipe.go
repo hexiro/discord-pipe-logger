@@ -9,6 +9,7 @@ import (
 
 // some code taken from
 // https://zetcode.com/golang/pipe/
+// https://flaviocopes.com/go-shell-pipes/
 
 const discordCharLimit = 2000
 

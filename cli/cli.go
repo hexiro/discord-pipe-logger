@@ -9,7 +9,7 @@ import (
 
 func Parse() (*webhook.Webhook, error) {
 	if len(os.Args) < 2 {
-		return nil, errors.New("no input provided")
+		return nil, errors.New("no webhook provided")
 	}
 
 	var hook *webhook.Webhook
@@ -25,7 +25,7 @@ func Parse() (*webhook.Webhook, error) {
 	argSplitLength := len(argSplit)
 
 	if argSplitLength < 2 {
-		return  hook, errors.New("hook can't be parsed from input")
+		return  hook, errors.New("invalid webhook provided")
 	}
 
 	id, token := argSplit[argSplitLength-2], argSplit[argSplitLength-1]
