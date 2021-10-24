@@ -19,10 +19,10 @@ func (e *APIError) Error() string {
 	return e.Message
 }
 
-// CheckResponse is a help func to check responses from discord API for errors
+// checkResponse is a help func to check responses from discord API for errors
 // `body` contains response from the server and probably will contain error information if
 // it hasn't been parsed to `*APIError` type.
-func CheckResponse(response *http.Response) (body []byte, err error) {
+func checkResponse(response *http.Response) (body []byte, err error) {
 	body, err = ioutil.ReadAll(response.Body)
 	if err != nil {
 		return
@@ -49,7 +49,7 @@ func CheckResponse(response *http.Response) (body []byte, err error) {
 	return
 }
 
-func CheckError(response *http.Response) error {
-	_, err := CheckResponse(response)
+func checkError(response *http.Response) error {
+	_, err := checkResponse(response)
 	return err
 }

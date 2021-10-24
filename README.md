@@ -1,7 +1,10 @@
 # discord-pipe-logger
 Feed pipe input into a Discord server via webhook.<br>
 
-# Installation
+
+![GitHub](https://img.shields.io/github/license/Hexiro/discord-pipe-logger)
+
+## Installation
 ```console
 go get github.com/Hexiro/discord-pipe-logger
 ```

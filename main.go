@@ -23,7 +23,7 @@ func main() {
 		return
 	}
 	for _, message := range messages {
-		_ = hook.SendMessage(&webhook.WebhookMessage{
+		_ = hook.SendMessage(&webhook.Message{
 			Content: message,
 		})
 	}

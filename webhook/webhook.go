@@ -18,8 +18,8 @@ import (
 // from https://github.com/kyb3r/dhooks/blob/cdd5f3f3bc109cbbc06f16a1cd9d39ed9d75a94e/dhooks/client.py#L118
 // discordHostRegex matches "discord.com", "discordapp.com", "canary.discord.com", "ptb.discord.com"
 var (
-	discordHostRegex = regexp.MustCompile("^((canary|ptb)\\.)?discord(?:app)?\\.com$")
-	discordIdRegex    = regexp.MustCompile("^[0-9]{0,20}$")
+	discordHostRegex  = regexp.MustCompile("^((canary|ptb)\\.)?discord(?:app)?\\.com$")
+	discordIDRegex    = regexp.MustCompile("^[0-9]{0,20}$")
 	discordTokenRegex = regexp.MustCompile(`^[A-Za-z0-9\.\-\_]+$`)
 )
 
@@ -36,9 +36,9 @@ type Webhook struct {
 	Token     string `json:"token"`
 }
 
-// WebhookMessage represents a message to send using webhook.
+// Message represents a message to send using webhook.
 // When sending a message there must be one of content or embeds.
-type WebhookMessage struct {
+type Message struct {
 	// Content is a message body up to 2000 characters.
 	Content   string   `json:"content"`
 	Username  string   `json:"username"`
@@ -51,8 +51,8 @@ type WebhookMessage struct {
 	// See `SendFile`.
 }
 
-// WebhookUpdate is used to update webhooks using tokens. Only name and avatar can be updated.
-type WebhookUpdate struct {
+// Update is used to update webhooks using tokens. Only name and avatar can be updated.
+type Update struct {
 	Name string `json:"name"`
 	// Avatar is a base64 encoded image. https://discord.com/developers/docs/reference#image-data
 	Avatar string `json:"avatar"`
@@ -75,8 +75,9 @@ func FromURL(webhookURL string) (webhook *Webhook, err error) {
 	return FromIDAndToken(id, token)
 }
 
+// FromIDAndToken  parses id and token and returns Webhook struct.
 func FromIDAndToken(id string, token string) (webhook *Webhook, err error) {
-	if !(discordIdRegex.MatchString(id) || discordTokenRegex.MatchString(token)) {
+	if !(discordIDRegex.MatchString(id) || discordTokenRegex.MatchString(token)) {
 		err = ErrParseWebhook
 		return
 	}
@@ -99,7 +100,7 @@ func (w *Webhook) Get() error {
 	if err != nil {
 		return err
 	}
-	content, err := CheckResponse(resp)
+	content, err := checkResponse(resp)
 	if err != nil {
 		return err
 	}
@@ -107,7 +108,7 @@ func (w *Webhook) Get() error {
 }
 
 // SendMessage sends message to webhook
-func (w *Webhook) SendMessage(message *WebhookMessage) error {
+func (w *Webhook) SendMessage(message *Message) error {
 	content, err := json.Marshal(message)
 	if err != nil {
 		return err
@@ -117,11 +118,11 @@ func (w *Webhook) SendMessage(message *WebhookMessage) error {
 	if err != nil {
 		return err
 	}
-	return CheckError(resp)
+	return checkError(resp)
 }
 
 // SendFile sends file with message to webhook
-func (w *Webhook) SendFile(file []byte, filename string, message *WebhookMessage) error {
+func (w *Webhook) SendFile(file []byte, filename string, message *Message) error {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 	f, err := writer.CreateFormFile("file", filename)
@@ -154,11 +155,11 @@ func (w *Webhook) SendFile(file []byte, filename string, message *WebhookMessage
 	if err != nil {
 		return err
 	}
-	return CheckError(resp)
+	return checkError(resp)
 }
 
 // Modify modifies webhook at the client and discord side.
-func (w *Webhook) Modify(update *WebhookUpdate) error {
+func (w *Webhook) Modify(update *Update) error {
 	body, err := json.Marshal(update)
 	if err != nil {
 		return err
@@ -173,7 +174,7 @@ func (w *Webhook) Modify(update *WebhookUpdate) error {
 	if err != nil {
 		return err
 	}
-	response, err := CheckResponse(resp)
+	response, err := checkResponse(resp)
 	if err != nil {
 		return err
 	}
@@ -190,5 +191,5 @@ func (w *Webhook) Delete() error {
 	if err != nil {
 		return err
 	}
-	return CheckError(resp)
+	return checkError(resp)
 }

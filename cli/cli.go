@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// Parse returns webhook input from cli as *webhook.Webhook.
 func Parse() (*webhook.Webhook, error) {
 	if len(os.Args) < 2 {
 		return nil, errors.New("no webhook provided")

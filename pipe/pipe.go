@@ -13,6 +13,7 @@ import (
 
 const discordCharLimit = 2000
 
+// Read returns input from pipe as []rune.
 func Read() ([]rune, error) {
 	info, err := os.Stdin.Stat()
 	var output []rune
@@ -38,6 +39,7 @@ func Read() ([]rune, error) {
 	return output, nil
 }
 
+// ReadMessages returns input from pipe, split every discordCharLimit chars as []string.
 func ReadMessages() ([]string, error) {
 	var messages []string
 

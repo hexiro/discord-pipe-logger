@@ -43,7 +43,7 @@ func TestCheckResponse(t *testing.T) {
 	}
 	for test, td := range testData {
 		t.Run(test, func(t *testing.T) {
-			_, err := CheckResponse(td.in)
+			_, err := checkResponse(td.in)
 			if td.out == nil {
 				if err != nil {
 					t.Error("Want nil, got ", err)
