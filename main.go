@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/Hexiro/discord-pipe-logger/cli"
-	"github.com/Hexiro/discord-pipe-logger/pipe"
-	"github.com/Hexiro/discord-pipe-logger/webhook"
+	"github.com/hexiro/discord-pipe-logger/cli"
+	"github.com/hexiro/discord-pipe-logger/pipe"
+	"github.com/hexiro/discord-pipe-logger/webhook"
 )
 
 func printUsage(err error) {
